@@ -51,11 +51,36 @@ def calibration_curve(df):
     plt.show() 
 
 
+def brier_score_distribution(df):
+    print("Generating Brier Score Distribution...")
+    
+    df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
+    
+    plt.figure(figsize=(8, 8))
+    sns.set_theme(style="whitegrid")
+    
+
+    sns.histplot(data=df, x='Brier_Score', bins=30, kde=True, color='purple', edgecolor='black')
+    
+    mean_brier = df['Brier_Score'].mean()
+    plt.axvline(mean_brier, color='red', linestyle='dashed', linewidth=2, 
+                label=f'Average Market Error: {mean_brier:.3f}')
+    
+    plt.title('Distribution of Brier Scores', fontsize=14, fontweight='bold')
+    plt.xlabel('Brier Score (0 = Perfect Prediction, 1 = Completely Wrong)', fontsize=12)
+    plt.ylabel('Number of Predictions (Frequency)', fontsize=12)
+    plt.legend()
+    
+    plt.savefig('brier_score.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
 
 def main():
     df = load_and_prepare_data('polymarket_election_data.csv')
     
-    calibration_curve(df)
+    # calibration_curve(df)
+
+    brier_score_distribution(df)
     
  
 main()
