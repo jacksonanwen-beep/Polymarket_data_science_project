@@ -113,11 +113,11 @@ def coefficient_plot(df):
 
     df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
     max_dates = df.groupby(['Event_ID', 'Outcome_Name'])['Date'].transform('max')
-    df['Days_to_Resolution'] = (max_dates - df['Date']).dt.days
+    df['Days_to_Resolution_per_100'] = (max_dates - df['Date']).dt.days / 100
     df['Market_Certainty'] = abs(df['Price'] - 0.5)
     
-    analysis_df = df[['Brier_Score', 'Days_to_Resolution', 'Market_Certainty']].dropna()
-    X = analysis_df[['Days_to_Resolution', 'Market_Certainty']]
+    analysis_df = df[['Brier_Score', 'Days_to_Resolution_per_100', 'Market_Certainty']].dropna()
+    X = analysis_df[['Days_to_Resolution_per_100', 'Market_Certainty']]
     y = analysis_df['Brier_Score']
     
     X = sm.add_constant(X)
