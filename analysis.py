@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import statsmodels.api as sm
 
 
 def load_and_prepare_data(filepath):
@@ -75,12 +76,46 @@ def brier_score_distribution(df):
     plt.show()
 
 
+
+def ols_regression(df):
+    print("Generating OLS Regression Table...")
+    
+    df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
+    
+    max_dates = df.groupby(['Event_ID', 'Outcome_Name'])['Date'].transform('max')
+    df['Days_to_Resolution'] = (max_dates - df['Date']).dt.days
+    
+    df['Market_Certainty'] = abs(df['Price'] - 0.5)
+    
+    analysis_df = df[['Brier_Score', 'Days_to_Resolution', 'Market_Certainty']].dropna()
+    
+    X = analysis_df[['Days_to_Resolution', 'Market_Certainty']]
+    y = analysis_df['Brier_Score']
+    
+    X = sm.add_constant(X)
+    
+    model = sm.OLS(y, X).fit()
+    
+    print("\n" + "="*60)
+    print("OLS REGRESSION RESULTS")
+    print("="*60)
+    print(model.summary())
+    
+    with open('regression_results.txt', 'w') as f:
+        f.write(model.summary().as_text())
+        
+    print("\nSuccessfully saved regression table to 'regression_results.txt'")
+
+
+
 def main():
     df = load_and_prepare_data('polymarket_election_data.csv')
     
     # calibration_curve(df)
 
-    brier_score_distribution(df)
+    # brier_score_distribution(df)
+
+    ols_regression(df)
     
  
 main()

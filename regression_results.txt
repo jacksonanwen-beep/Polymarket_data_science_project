@@ -1,0 +1,26 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:            Brier_Score   R-squared:                       0.005
+Model:                            OLS   Adj. R-squared:                  0.005
+Method:                 Least Squares   F-statistic:                     2331.
+Date:                Fri, 24 Apr 2026   Prob (F-statistic):               0.00
+Time:                        20:29:30   Log-Likelihood:            -4.0271e+05
+No. Observations:             1012529   AIC:                         8.054e+05
+Df Residuals:                 1012526   BIC:                         8.055e+05
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+======================================================================================
+                         coef    std err          t      P>|t|      [0.025      0.975]
+--------------------------------------------------------------------------------------
+const                  0.2744      0.001    203.776      0.000       0.272       0.277
+Days_to_Resolution     0.0002   5.65e-06     32.083      0.000       0.000       0.000
+Market_Certainty      -0.1671      0.003    -57.865      0.000      -0.173      -0.161
+==============================================================================
+Omnibus:                   192504.073   Durbin-Watson:                   0.021
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):           329348.599
+Skew:                           1.395   Prob(JB):                         0.00
+Kurtosis:                       3.158   Cond. No.                         840.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
