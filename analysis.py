@@ -107,6 +107,53 @@ def ols_regression(df):
     print("\nSuccessfully saved regression table to 'regression_results.txt'")
 
 
+def coefficient_plot(df):
+    print("Generating Coefficient Plot...")
+    
+
+    df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
+    max_dates = df.groupby(['Event_ID', 'Outcome_Name'])['Date'].transform('max')
+    df['Days_to_Resolution'] = (max_dates - df['Date']).dt.days
+    df['Market_Certainty'] = abs(df['Price'] - 0.5)
+    
+    analysis_df = df[['Brier_Score', 'Days_to_Resolution', 'Market_Certainty']].dropna()
+    X = analysis_df[['Days_to_Resolution', 'Market_Certainty']]
+    y = analysis_df['Brier_Score']
+    
+    X = sm.add_constant(X)
+    
+    model = sm.OLS(y, X).fit()
+
+    coefs = model.params.drop('const')
+    conf_ints = model.conf_int().drop('const')
+    
+    error_margins = coefs - conf_ints[0]
+    
+    plt.figure(figsize=(10, 5))
+    sns.set_theme(style="whitegrid")
+    
+    plt.errorbar(
+        x=coefs, 
+        y=coefs.index, 
+        xerr=error_margins, 
+        fmt='o', 
+        color='darkblue', 
+        markersize=10, 
+        linewidth=2, 
+        capsize=6
+    )
+    
+    plt.axvline(0, color='red', linestyle='--', linewidth=2, label='No Effect (Zero Line)')
+    
+    plt.title('Variables Impacting Polymarket Error (Brier Score)', fontsize=14, fontweight='bold')
+    plt.xlabel('Coefficient Effect Size\n(< 0: Improves Accuracy | > 0: Worsens Accuracy)', fontsize=12)
+    plt.ylabel('Variables', fontsize=12)
+    plt.yticks(fontsize=12, fontweight='bold')
+    plt.legend()
+    
+    plt.savefig('coefficient_plot.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
 
 def main():
     df = load_and_prepare_data('polymarket_election_data.csv')
@@ -115,7 +162,9 @@ def main():
 
     # brier_score_distribution(df)
 
-    ols_regression(df)
+    # ols_regression(df)
+
+    coefficient_plot(df)
     
  
 main()
