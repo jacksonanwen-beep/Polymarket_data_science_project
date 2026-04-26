@@ -3,7 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
-
+from econml.dml import CausalForestDML
+from sklearn.ensemble import RandomForestRegressor,RandomForestClassifier
+    
 
 def load_and_prepare_data(filepath):
     print("Loading data...")
@@ -155,6 +157,52 @@ def coefficient_plot(df):
     plt.show()
 
 
+
+def causal_forest(df):
+    print("Generating Causal Forest (HTE)...")
+    
+    df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
+    max_dates = df.groupby(['Event_ID', 'Outcome_Name'])['Date'].transform('max')
+    df['Days_to_Resolution'] = (max_dates - df['Date']).dt.days
+    
+    df['Is_Underdog'] = (df['Price'] < 0.5).astype(int)
+    
+    analysis_df = df[['Brier_Score', 'Is_Underdog', 'Days_to_Resolution']].dropna()
+    sample_df = analysis_df.sample(n=min(20000, len(analysis_df)), random_state=42)
+    
+    Y = sample_df['Brier_Score']
+    T = sample_df['Is_Underdog']
+    X = sample_df[['Days_to_Resolution']]
+    
+    print("Training Causal Forest...")
+    est = CausalForestDML(
+        model_y=RandomForestRegressor(n_estimators=50, max_depth=5),
+        model_t=RandomForestClassifier(n_estimators=50, max_depth=5),
+        discrete_treatment=True,
+        n_estimators=100,
+        random_state=42
+    )
+    est.fit(Y, T, X=X)
+    
+    treatment_effects = est.effect(X)
+    
+    plt.figure(figsize=(10, 6))
+    sns.set_theme(style="whitegrid")
+    
+    sns.scatterplot(x=X['Days_to_Resolution'], y=treatment_effects, alpha=0.3, color='teal')
+    
+    plt.axhline(0, color='red', linestyle='--', linewidth=2, label='No Difference (Underdog Error = Favorite Error)')
+    
+    plt.title('Causal Forest: How Time Changes the "Underdog Penalty"', fontsize=14, fontweight='bold')
+    plt.xlabel('Days to Election', fontsize=12)
+    plt.ylabel('Treatment Effect on Error\n(> 0: Underdogs are WORSE | < 0: Underdogs are BETTER)', fontsize=12)
+    plt.legend()
+    
+    plt.savefig('causal_forest.png', bbox_inches='tight', dpi=300)
+    plt.show()
+
+
+
 def main():
     df = load_and_prepare_data('polymarket_election_data.csv')
     
@@ -164,7 +212,9 @@ def main():
 
     # ols_regression(df)
 
-    coefficient_plot(df)
+    # coefficient_plot(df)
+
+    causal_forest(df)
     
  
 main()
