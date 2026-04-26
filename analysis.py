@@ -78,9 +78,8 @@ def brier_score_distribution(df):
     plt.show()
 
 
-
-def ols_regression(df):
-    print("Generating OLS Regression Table...")
+def ols_regression_1(df):
+    print("Generating First OLS Regression Table...")
     
     df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
     
@@ -99,14 +98,52 @@ def ols_regression(df):
     model = sm.OLS(y, X).fit()
     
     print("\n" + "="*60)
-    print("OLS REGRESSION RESULTS")
+    print("FIRST OLS REGRESSION RESULTS")
     print("="*60)
     print(model.summary())
     
-    with open('regression_results.txt', 'w') as f:
+    with open('first_regression_results.txt', 'w') as f:
         f.write(model.summary().as_text())
         
-    print("\nSuccessfully saved regression table to 'regression_results.txt'")
+    print("\nSuccessfully saved regression table to 'first_regression_results.txt'")
+
+
+def ols_regression_2(df):
+    print("Generating Second OLS Regression Table...")
+    
+    df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
+    
+    df = df.sort_values(by=['Event_ID', 'Outcome_Name', 'Date'])
+    
+    df['14_Day_Volatility'] = df.groupby(['Event_ID', 'Outcome_Name'])['Price'].transform(lambda x: x.rolling(14).std())
+    
+    gop_heavyweights = [
+        'Donald Trump', 'Nikki Haley', 'Ron DeSantis', 
+        'Vivek Ramaswamy', 'Tim Scott', 'Chris Christie', 
+        'Mike Pence', 'Doug Burgum', 'Republican'
+    ]
+    df['Is_Republican'] = df['Outcome_Name'].isin(gop_heavyweights).astype(int)
+    
+    features = ['14_Day_Volatility', 'Is_Republican']
+    analysis_df = df[['Brier_Score'] + features].dropna()
+    
+    X = analysis_df[features]
+    y = analysis_df['Brier_Score']
+    
+    X = sm.add_constant(X)
+    
+    model = sm.OLS(y, X).fit()
+    
+    print("\n" + "="*60)
+    print("SECOND OLS REGRESSION RESULTS")
+    print("="*60)
+    print(model.summary())
+    
+
+    with open('second_regression_results.txt', 'w') as f:
+        f.write(model.summary().as_text())
+    
+    print("\nSuccessfully saved regression table to 'second_regression_results.txt'")
 
 
 def coefficient_plot(df):
@@ -157,7 +194,6 @@ def coefficient_plot(df):
     plt.show()
 
 
-
 def causal_forest(df):
     print("Generating Causal Forest (HTE)...")
     
@@ -202,17 +238,18 @@ def causal_forest(df):
     plt.show()
 
 
-
 def main():
     df = load_and_prepare_data('polymarket_election_data.csv')
     
-    # calibration_curve(df)
+    calibration_curve(df)
 
-    # brier_score_distribution(df)
+    brier_score_distribution(df)
 
-    # ols_regression(df)
+    ols_regression_1(df)
 
-    # coefficient_plot(df)
+    ols_regression_2(df)
+
+    coefficient_plot(df)
 
     causal_forest(df)
     

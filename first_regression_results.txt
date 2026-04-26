@@ -3,8 +3,8 @@
 Dep. Variable:            Brier_Score   R-squared:                       0.005
 Model:                            OLS   Adj. R-squared:                  0.005
 Method:                 Least Squares   F-statistic:                     2331.
-Date:                Fri, 24 Apr 2026   Prob (F-statistic):               0.00
-Time:                        20:29:30   Log-Likelihood:            -4.0271e+05
+Date:                Sun, 26 Apr 2026   Prob (F-statistic):               0.00
+Time:                        19:25:41   Log-Likelihood:            -4.0271e+05
 No. Observations:             1012529   AIC:                         8.054e+05
 Df Residuals:                 1012526   BIC:                         8.055e+05
 Df Model:                           2                                         
