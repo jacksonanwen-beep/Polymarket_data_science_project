@@ -151,12 +151,15 @@ def coefficient_plot(df):
     
 
     df['Brier_Score'] = (df['Price'] - df['Actual_Outcome'])**2
-    max_dates = df.groupby(['Event_ID', 'Outcome_Name'])['Date'].transform('max')
-    df['Days_to_Resolution_per_100'] = (max_dates - df['Date']).dt.days / 100
-    df['Market_Certainty'] = abs(df['Price'] - 0.5)
+    df = df.sort_values(by=['Event_ID', 'Outcome_Name', 'Date'])
     
-    analysis_df = df[['Brier_Score', 'Days_to_Resolution_per_100', 'Market_Certainty']].dropna()
-    X = analysis_df[['Days_to_Resolution_per_100', 'Market_Certainty']]
+    df['14_Day_Volatility'] = df.groupby(['Event_ID', 'Outcome_Name'])['Price'].transform(lambda x: x.rolling(14).std())
+    gop_heavyweights = ['Donald Trump', 'Nikki Haley', 'Ron DeSantis', 'Vivek Ramaswamy', 'Tim Scott', 'Chris Christie', 'Mike Pence', 'Doug Burgum', 'Republican']
+    df['Is_Republican'] = df['Outcome_Name'].isin(gop_heavyweights).astype(int)
+
+    features = ['14_Day_Volatility', 'Is_Republican']
+    analysis_df = df[['Brier_Score'] + features].dropna()
+    X = analysis_df[features]
     y = analysis_df['Brier_Score']
     
     X = sm.add_constant(X)
@@ -165,7 +168,6 @@ def coefficient_plot(df):
 
     coefs = model.params.drop('const')
     conf_ints = model.conf_int().drop('const')
-    
     error_margins = coefs - conf_ints[0]
     
     plt.figure(figsize=(10, 5))
