@@ -37,7 +37,7 @@ def calibration_curve(df):
         y='Actual_Outcome', 
         marker='o', 
         linewidth=2, 
-        color='blue',
+        color='purple',
         label='Polymarket Accuracy'
     )
 
@@ -178,7 +178,7 @@ def coefficient_plot(df):
         y=coefs.index, 
         xerr=error_margins, 
         fmt='o', 
-        color='darkblue', 
+        color='purple', 
         markersize=10, 
         linewidth=2, 
         capsize=6
@@ -227,7 +227,7 @@ def causal_forest(df):
     plt.figure(figsize=(10, 6))
     sns.set_theme(style="whitegrid")
     
-    sns.scatterplot(x=X['Days_to_Resolution'], y=treatment_effects, alpha=0.3, color='teal')
+    sns.scatterplot(x=X['Days_to_Resolution'], y=treatment_effects, alpha=0.3, color='purple')
     
     plt.axhline(0, color='red', linestyle='--', linewidth=2, label='No Difference (Underdog Error = Favorite Error)')
     
