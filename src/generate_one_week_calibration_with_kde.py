@@ -1,0 +1,59 @@
+import seaborn as sns
+from matplotlib import pyplot as plt
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.calibration import calibration_curve
+from sklearn.linear_model import LogisticRegression
+from sklearn.isotonic import IsotonicRegression
+import numpy as np
+from my_lib.consts import REPOSITORY_ROOT
+
+
+def generate_one_month_calibration_with_kde():
+    df = pd.read_csv("data/market_data_one_week_before_certainty.csv")
+    df = df.dropna(subset=['avg_price', 'outcome'])
+    
+    y_true = df['outcome'].astype(int)
+    y_prob = df['avg_price']
+
+    # calculate calibration curve
+    prob_true, prob_pred = calibration_curve(y_true, y_prob, n_bins=10, strategy='uniform')
+
+    # setup the plot
+    fig, ax1 = plt.subplots(figsize=(10, 7), facecolor='white')
+    
+    # plot calibration curve on primary Y-axis
+    ax1.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Perfectly Calibrated')
+    ax1.plot(prob_pred, prob_true, marker='s', linewidth=2, label='Market Performance')
+    ax1.set_xlabel('Market Price (Predicted probability)')
+    ax1.set_ylabel('Actual Proportion of "Yes" Outcomes')
+    ax1.set_xlim(0, 1)
+    ax1.set_ylim(0, 1)
+    ax1.legend(loc='upper left')
+
+    # create secondary Y-axis for KDE
+    ax2 = ax1.twinx()
+    
+    # PLOT THE KDE
+    sns.kdeplot(
+        data=df, 
+        x='avg_price', 
+        weights='volume',  # weight the curve by newly added volume data
+        ax=ax2, 
+        fill=True, 
+        color='blue', 
+        alpha=0.1, 
+        bw_adjust=0.8, 
+        label='Volume-Weighted Price Density'
+    )
+    
+    ax2.set_ylabel('Volume Density', color='blue', alpha=0.5)
+    ax2.tick_params(axis='y', labelcolor='blue')
+    
+    plt.title(f'Calibration & Volume Distribution 1 Week from Market Certainty')
+    plt.tight_layout()
+    plt.savefig(f"{REPOSITORY_ROOT}/writeup/calibration_and_kde_1_week.png")
+    plt.show()
+
+# Call the function
+generate_one_month_calibration_with_kde()
