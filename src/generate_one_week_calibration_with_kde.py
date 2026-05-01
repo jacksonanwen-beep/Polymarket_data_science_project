@@ -33,27 +33,24 @@ def generate_one_month_calibration_with_kde():
 
     # create secondary Y-axis for KDE
     ax2 = ax1.twinx()
+    ax2.set_yticks([])
+    ax2.set_label("")
     
-    # PLOT THE KDE
+    # plot KDE
     sns.kdeplot(
         data=df, 
-        x='avg_price', 
-        weights='volume',  # weight the curve by newly added volume data
+        x='avg_price',
         ax=ax2, 
         fill=True, 
         color='blue', 
         alpha=0.1, 
         bw_adjust=0.8, 
-        label='Volume-Weighted Price Density'
+        label='Price Density'
     )
     
-    ax2.set_ylabel('Volume Density', color='blue', alpha=0.5)
-    ax2.tick_params(axis='y', labelcolor='blue')
-    
-    plt.title(f'Calibration & Volume Distribution 1 Week from Market Certainty')
+    plt.title(f'Calibration & Data Distribution 1 Week from Market Certainty')
     plt.tight_layout()
     plt.savefig(f"{REPOSITORY_ROOT}/writeup/calibration_and_kde_1_week.png")
     plt.show()
 
-# Call the function
 generate_one_month_calibration_with_kde()
