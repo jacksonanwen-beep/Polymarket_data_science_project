@@ -5,6 +5,10 @@ events.json
 learning.py
 polymarket_election_data.csv
 regression_model.py
+data/http_cache/
 
+
+.DS_Store
 __pycache__/
 .ipynb_checkpoints/
+.venv
