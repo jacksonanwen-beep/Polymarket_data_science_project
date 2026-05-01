@@ -129,11 +129,10 @@ def get_price_data_before(event:dict, offset_before:int, collection_period:int, 
         else:
             price_std_dev = 0.0
 
-        outcome = int(market_data.get('final_Yes',0)) # add comment to explain the ,0
+        outcome = int(market_data.get('final_Yes',0))
         
         
-        # NEW LOGIC: Calculate Standard Deviation
-        # Requires at least two points to calculate deviation
+        # calculate standard deviation (requires at least two points)
         if len(price_over_48_hours) > 1:
             price_std_dev = statistics.stdev(price_over_48_hours)
         else:
