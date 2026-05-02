@@ -1,0 +1,11 @@
+matplotlib
+numpy
+pandas
+requests
+scikit-learn
+scipy
+seaborn
+tqdm
+urllib3
+statsmodels
+econml
