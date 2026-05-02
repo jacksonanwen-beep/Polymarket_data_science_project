@@ -1,10 +1,10 @@
 import os
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.inspection import PartialDependenceDisplay
 import matplotlib.pyplot as plt
 
 from my_lib.consts import REPOSITORY_ROOT
-
 
 
 def plot_feature_importance_with_price_volatility():
@@ -17,13 +17,13 @@ def plot_feature_importance_with_price_volatility():
     # target: absolute error
     df['abs_error'] = (df['outcome'] - df['avg_price']).abs()
 
-    # feature 'num_markets' --> count the number of markets in each event to discover abs_error I THINK THIS IS WRONG. HOW DOES IT WORK AGAIN?
+    # feature 'num_markets' --> count the number of markets in each event to discover abs_error
     df['num_markets'] = df.groupby('event_id')['question'].transform('count')
 
 
     # fit Model (excluding avg_price)
-    features = ['volume', 'num_markets', 'price_std_dev']
-    X = df[features].fillna(0)
+    features = ['volume', 'num_markets', 'price_std_dev', 'time_before_certainty']
+    X = df[features]
     y = df['abs_error']
 
     model = GradientBoostingRegressor(n_estimators=100, random_state=42)
@@ -31,39 +31,10 @@ def plot_feature_importance_with_price_volatility():
 
     # plot graph
     importance = pd.Series(model.feature_importances_, index=features).sort_values()
-    importance.plot(kind='barh', color='darkgreen')
-    plt.title('Contextual Drivers of Market Inaccuracy')
-    plt.savefig('importance_incl_volatility.png')
-    plt.show()
 
-
-def plot_feature_importance_without_price_volatility():
-
-    files = [f'{REPOSITORY_ROOT}/data/market_data_six_months_before_certainty.csv', f'{REPOSITORY_ROOT}/data/market_data_one_month_before_certainty.csv',
-         f'{REPOSITORY_ROOT}/data/market_data_one_week_before_certainty.csv', f'{REPOSITORY_ROOT}/data/market_data_one_day_before_certainty.csv']
-    dataframes = [pd.read_csv(f) for f in files if os.path.exists(f)]
-    df = pd.concat(dataframes)
-
-
-    df['abs_error'] = (df['outcome'] - df['avg_price']).abs()
-
-
-    df['num_markets'] = df.groupby('event_id')['question'].transform('count')
-
-
-    features = ['volume', 'num_markets']
-    X = df[features].fillna(0)
-    y = df['abs_error']
-
-    model = GradientBoostingRegressor(n_estimators=100, random_state=42)
-    model.fit(X, y)
-
-    importance = pd.Series(model.feature_importances_, index=features).sort_values()
-    importance.plot(kind='barh', color='darkgreen')
-    plt.title('Contextual Drivers of Market Inaccuracy')
-    plt.savefig('importance_excl_volatility.png')
+    pd_plot = PartialDependenceDisplay.from_estimator(model, X, ['volume','num_markets', 'price_std_dev', 'time_before_certainty'])
+    plt.savefig(f"{REPOSITORY_ROOT}/writeup/Effect_of_variables_on_accuracy.png")
     plt.show()
 
 if __name__ == "__main__":
     plot_feature_importance_with_price_volatility()
-    plot_feature_importance_without_price_volatility()
