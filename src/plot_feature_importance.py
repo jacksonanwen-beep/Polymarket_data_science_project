@@ -33,6 +33,11 @@ def plot_feature_importance_with_price_volatility():
     importance = pd.Series(model.feature_importances_, index=features).sort_values()
 
     pd_plot = PartialDependenceDisplay.from_estimator(model, X, ['volume','num_markets', 'price_std_dev', 'time_before_certainty'])
+    fig = pd_plot.figure_
+    fig.set_size_inches(16, 10)
+
+    # 4. Adjust the spacing between subplots (wspace=width, hspace=height)
+    fig.subplots_adjust(wspace=0.3, hspace=0.3)  
     plt.savefig(f"{REPOSITORY_ROOT}/writeup/Effect_of_variables_on_accuracy.png")
     plt.show()
 
